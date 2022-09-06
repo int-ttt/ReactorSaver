@@ -1,6 +1,5 @@
 package net.intt.reactor;
 
-import net.intt.reactor.reactor.HeatThread;
 import net.intt.reactor.reactor.ReactorThread;
 import net.intt.reactor.reactor.TerminalThread;
 import net.intt.reactor.util.JlineStream;
@@ -26,15 +25,21 @@ public class Main {
     
     public static final LogManager log = new LogManager("reactor system", new JlineStream(reader));
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseException {
 
-        if (args[1].equals("test")) {
+        if (args[0].equals("test")) {
             dataFile = fileSetup(1);
         } else dataFile = fileSetup();
 
-        Thread t0 = new Thread(new HeatThread());
-        Thread t1 = new Thread(new ReactorThread());
-        Thread t7 = new Thread(new TerminalThread());
+        JSONObject json = (JSONObject) Util.getInstance().JSONParser().parse(dataFile.getPath());
+
+        reactor = new Reactor(
+                (int) json.get("uranium"), (int) json.get("control"), (int) json.get("system"),
+                (int) json.get("cooler"), (int) json.get("generator"), (int) json.get("core"));
+
+        ReactorThread reactor = new ReactorThread();
+        new Thread(reactor).start();
+        new Thread(new TerminalThread(reactor)).start();
     }
 
     public static String OSCheck() {
@@ -64,19 +69,19 @@ public class Main {
 
     private static File fileSetup(int i) throws IOException {
         File file;
-        if (i==1) file = new File(OSCheck() + "/ReactorSaver/data.json");
+        if (i!=1) file = new File(OSCheck() + "/ReactorSaver/data.json");
         else file = new File("data.json");
         JSONObject json = new JSONObject();
         if (file.createNewFile()) {
             json.put("reactorAppend","");
             json.put("money","20000");
-            json.put("expenditure","200");
             JSONObject reactorObject = new JSONObject();
-            reactorObject.put("cooler",0);
-            reactorObject.put("control",0);
-            reactorObject.put("uranium",0);
-            reactorObject.put("system",0);
-            reactorObject.put("generator",0);
+            reactorObject.put("cooler",1);
+            reactorObject.put("control",1);
+            reactorObject.put("uranium",1);
+            reactorObject.put("system",1);
+            reactorObject.put("generator",1);
+            reactorObject.put("core", 1);
             json.put("reactor", reactorObject);
         } else {
             try {

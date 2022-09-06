@@ -6,32 +6,61 @@ public class Reactor {
     private int systemLevel;
     private int coolerLevel;
     private int generatorLevel;
+    private int reactorCoreLevel;
 
-    public Reactor(int uraniumLevel, int controlRodLevel, int systemLevel, int coolerLevel, int generatorLevel) {
+    public Reactor(int uraniumLevel, int controlRodLevel, int systemLevel, int coolerLevel, int generatorLevel, int reactorCoreLevel) {
         this.uraniumLevel = uraniumLevel;
         this.controlRodLevel = controlRodLevel;
         this.systemLevel = systemLevel;
         this.coolerLevel = coolerLevel;
         this.generatorLevel = generatorLevel;
+        this.reactorCoreLevel = reactorCoreLevel;
+    }
+
+    public void addControlRodLevel() {
+        this.controlRodLevel++;
+    }
+
+    public void setSystemLevel() {
+        this.systemLevel++;
+    }
+    public void addCoolerLevel() {
+        this.coolerLevel++;
+    }
+
+    public void addGeneratorLevel() {
+        this.generatorLevel++;
+    }
+
+    public void addUraniumLevel() {
+        this.uraniumLevel++;
+    }
+
+    public void addReactorCoreLevel() {
+        this.reactorCoreLevel++;
     }
 
     public int getControlRodLevel() {
-        return controlRodLevel * 2 + 5;
+        return controlRodLevel;
     }
 
     public int getSystemLevel() {
-        return systemLevel + 1;
+        return systemLevel;
     }
 
     public int getCoolerLevel() {
-        return coolerLevel + 1;
+        return coolerLevel;
     }
 
     public int getGeneratorLevel() {
-        return generatorLevel + 1;
+        return generatorLevel;
     }
 
     public int getUraniumLevel() {
-        return uraniumLevel + 1;
+        return uraniumLevel;
+    }
+
+    public int getReactorCoreLevel() {
+        return reactorCoreLevel;
     }
 }
