@@ -1,11 +1,11 @@
 package net.intt.reactor;
 
 public class Reactor {
-    private int uraniumLevel;
-    private int controlRodLevel;
-    private int systemLevel;
-    private int coolerLevel;
-    private int generatorLevel;
+    private int uraniumLevel; //1kg = 20'c/sec
+    private int controlRodLevel; //1 = uraniumLevel in 1 sec
+    private int systemLevel; //terminal return speed
+    private int coolerLevel; //1min = 300
+    private int generatorLevel; //generating electric 1 = 2000
     private int reactorCoreLevel;
 
     public Reactor(int uraniumLevel, int controlRodLevel, int systemLevel, int coolerLevel, int generatorLevel, int reactorCoreLevel) {
@@ -21,7 +21,7 @@ public class Reactor {
         this.controlRodLevel++;
     }
 
-    public void setSystemLevel() {
+    public void addSystemLevel() {
         this.systemLevel++;
     }
     public void addCoolerLevel() {

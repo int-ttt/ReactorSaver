@@ -1,45 +1,59 @@
 package net.intt.reactor;
 
 import net.intt.reactor.reactor.ReactorThread;
+import net.intt.reactor.reactor.ReactorWarnThread;
 import net.intt.reactor.reactor.TerminalThread;
+import net.intt.reactor.thread.SaveThread;
 import net.intt.reactor.util.JlineStream;
 import net.intt.reactor.util.Util;
 import net.intt.util.LogManager;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigInteger;
 
 public class Main {
-    public static BigInteger money;
-    public static BigInteger expenditure;
+    public static long money;
+    public static long expenditure;
     public static Reactor reactor;
 
-    public static File dataFile;
+    public static File dataFile = fileSetup();
 
-    public static final LineReader reader = LineReaderBuilder.builder().build();
-    
+    public static final LineReader reader = LineReaderBuilder.builder().terminal(terminal()).build();
+
+
+    private static Terminal terminal() {
+        try {
+            return TerminalBuilder.builder().jansi(true).build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final LogManager log = new LogManager("reactor system", new JlineStream(reader));
 
     public static void main(String[] args) throws IOException, ParseException {
 
-        if (args[0].equals("test")) {
-            dataFile = fileSetup(1);
-        } else dataFile = fileSetup();
-
-        JSONObject json = (JSONObject) Util.getInstance().JSONParser().parse(dataFile.getPath());
+        JSONObject json = (JSONObject) ((JSONObject) Util.getInstance().JSONParser().parse(new FileReader(dataFile))).get("reactor");
 
         reactor = new Reactor(
-                (int) json.get("uranium"), (int) json.get("control"), (int) json.get("system"),
-                (int) json.get("cooler"), (int) json.get("generator"), (int) json.get("core"));
+                (int) ((long) json.get("uranium")), (int) ((long) json.get("control")), (int) ((long) json.get("system")),
+                (int) ((long) json.get("cooler")), (int) ((long) json.get("generator")), (int) ((long) json.get("core")));
+        ReactorThread reactorThread = new ReactorThread(reactor);
 
-        ReactorThread reactor = new ReactorThread();
-        new Thread(reactor).start();
-        new Thread(new TerminalThread(reactor)).start();
+        SaveThread.setTime(10);
+
+        new Thread(reactorThread).start();
+        new Thread(new ReactorWarnThread(reactorThread)).start();
+        new Thread(new SaveThread()).start();
+        new Thread(new TerminalThread(reactorThread)).start();
     }
 
     public static String OSCheck() {
@@ -50,8 +64,7 @@ public class Main {
             FileFolder = System.getenv("APPDATA") + "\\" + "Launcher";
         }
         else if (os.contains("MAC")) {
-            FileFolder = System.getProperty("user.home") + "/Library/Application Support"
-                    + "Launcher";
+            FileFolder = System.getProperty("user.home") + "/Library/Application Support";
         }
         else if (os.contains("NUX")) {
             FileFolder = System.getProperty("user.dir") + ".Launcher";
@@ -63,16 +76,22 @@ public class Main {
         return FileFolder;
     }
 
-    private static File fileSetup() throws IOException {
-        return fileSetup(0);
+    private static File fileSetup(){
+        File file;
+        try {
+            file = fileSetup(0);
+        } catch (IOException e) {
+            file = null;
+        }
+        return file;
     }
 
     private static File fileSetup(int i) throws IOException {
-        File file;
-        if (i!=1) file = new File(OSCheck() + "/ReactorSaver/data.json");
-        else file = new File("data.json");
+        File file = new File(OSCheck() + "/ReactorSaver/data.json");
+        if (i==1) file = new File("data.json");
         JSONObject json = new JSONObject();
         if (file.createNewFile()) {
+            System.out.println(1);
             json.put("reactorAppend","");
             json.put("money","20000");
             JSONObject reactorObject = new JSONObject();
@@ -83,11 +102,10 @@ public class Main {
             reactorObject.put("generator",1);
             reactorObject.put("core", 1);
             json.put("reactor", reactorObject);
-        } else {
-            try {
-                json = (JSONObject) Util.getInstance().JSONParser().parse(file.getPath());
-            } catch (ParseException e) {
-            }
+            FileWriter writer = new FileWriter(file);
+            writer.write(json.toJSONString());
+            writer.flush();
+            writer.close();
         }
         return file;
     }
